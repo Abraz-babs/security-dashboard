@@ -7,15 +7,24 @@ N2YO_BASE = "https://api.n2yo.com/rest/v1/satellite"
 # Key reconnaissance/observation satellites
 TRACKED_SATELLITES = [
     {"norad_id": 25544, "name": "ISS (ZARYA)"},
-    {"norad_id": 40069, "name": "SENTINEL-2A"},
-    {"norad_id": 42063, "name": "SENTINEL-2B"},
-    {"norad_id": 33591, "name": "NOAA-19"},
+    {"norad_id": 39634, "name": "SENTINEL-1A (SAR)"},
+    {"norad_id": 41456, "name": "SENTINEL-1B (SAR)"},
+    {"norad_id": 40069, "name": "SENTINEL-2A (Optical)"},
+    {"norad_id": 42063, "name": "SENTINEL-2B (Optical)"},
+    {"norad_id": 41335, "name": "SENTINEL-3A (Ocean)"},
+    {"norad_id": 43437, "name": "SENTINEL-3B (Ocean)"},
+    {"norad_id": 40697, "name": "SENTINEL-5P (Atmosphere)"},
+    {"norad_id": 33591, "name": "NOAA-19 (Weather)"},
     {"norad_id": 43013, "name": "NOAA-20 (JPSS-1)"},
     {"norad_id": 27424, "name": "TERRA (EOS AM-1)"},
     {"norad_id": 27386, "name": "AQUA (EOS PM-1)"},
     {"norad_id": 49260, "name": "LANDSAT 9"},
     {"norad_id": 39084, "name": "LANDSAT 8"},
     {"norad_id": 43602, "name": "ICESAT-2"},
+    {"norad_id": 40115, "name": "WORLDVIEW-3 (High Res)"},
+    {"norad_id": 25994, "name": "LANDSAT 7"},
+    {"norad_id": 38771, "name": "SPOT-6"},
+    {"norad_id": 25682, "name": "SPOT-4"},
 ]
 
 
