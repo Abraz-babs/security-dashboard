@@ -44,6 +44,7 @@ app.add_middleware(
         "https://*.vercel.app",
         "https://*.netlify.app",
         "https://security-ai-fushion-dashboard-kb.netlify.app",
+        "https://security-dashboard-production-2516.up.railway.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
