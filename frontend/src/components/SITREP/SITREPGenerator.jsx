@@ -19,50 +19,39 @@ export default function SITREPGenerator() {
         setLoading(false);
     };
 
-    const handlePrint = () => {
+    const handleDownload = () => {
         if (!sitrep?.sitrep) return;
         
-        // Check for popup blocker - v2 fix
-        const printWin = window.open('', '_blank');
-        if (!printWin) {
-            alert('Please allow popups to print SITREP');
-            return;
-        }
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const filename = `SITREP-KEBBI-${timestamp}.txt`;
         
-        const content = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>SITREP - CITADEL KEBBI</title>
-    <style>
-        body { font-family: 'Courier New', monospace; padding: 40px; font-size: 12px; line-height: 1.8; }
-        h1 { font-size: 16px; text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .classification { text-align: center; font-weight: bold; color: red; margin: 10px 0; }
-        pre { white-space: pre-wrap; word-wrap: break-word; }
-        @media print {
-            body { padding: 20px; }
-        }
-    </style>
-</head>
-<body>
-    <div class="classification">TOP SECRET // KEBBI STATE GOVERNMENT</div>
-    <h1>SITUATION REPORT (SITREP)</h1>
-    <div class="classification">CITADEL KEBBI INTELLIGENCE COMMAND CENTER</div>
-    <pre>${sitrep.sitrep.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-    <div class="classification">TOP SECRET // KEBBI STATE GOVERNMENT</div>
-    <script>
-        window.onload = function() {
-            setTimeout(function() {
-                window.print();
-            }, 250);
-        };
-    </script>
-</body>
-</html>`;
+        const content = `TOP SECRET // KEBBI STATE GOVERNMENT
+================================================================================
+                    SITUATION REPORT (SITREP)
+              CITADEL KEBBI INTELLIGENCE COMMAND CENTER
+================================================================================
+
+Period: ${sitrep.period}
+Generated: ${new Date().toLocaleString()} WAT
+Classification: TOP SECRET
+
+--------------------------------------------------------------------------------
+${sitrep.sitrep}
+--------------------------------------------------------------------------------
+
+TOP SECRET // KEBBI STATE GOVERNMENT
+End of Report
+`;
         
-        printWin.document.write(content);
-        printWin.document.close();
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -89,8 +78,8 @@ export default function SITREPGenerator() {
                         {loading ? '◈ GENERATING...' : '◈ GENERATE SITREP'}
                     </button>
                     {sitrep && (
-                        <button className="btn-neon btn-success" onClick={handlePrint} style={{ padding: '10px 20px' }}>
-                            🖨️ PRINT / EXPORT
+                        <button className="btn-neon btn-success" onClick={handleDownload} style={{ padding: '10px 20px' }}>
+                            📥 DOWNLOAD SITREP
                         </button>
                     )}
                 </div>
