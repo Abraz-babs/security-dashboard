@@ -43,6 +43,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "https://*.vercel.app",
         "https://*.netlify.app",
+        "https://security-ai-fushion-dashboard-kb.netlify.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
