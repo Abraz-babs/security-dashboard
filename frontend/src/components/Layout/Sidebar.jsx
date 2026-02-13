@@ -13,7 +13,12 @@ const NAV_ITEMS = [
     { id: 'admin', label: 'Admin / Settings', icon: '⚙' },
 ];
 
-export default function Sidebar({ activeTab, onTabChange, onLogout }) {
+export default function Sidebar({ activeTab, onTabChange, onLogout, user }) {
+    // Get allowed menu items from user permissions
+    const allowedItems = user?.permissions?.menu_items || ['dashboard'];
+    
+    // Filter nav items based on permissions
+    const visibleItems = NAV_ITEMS.filter(item => allowedItems.includes(item.id));
     return (
         <nav className="sidebar">
             <div className="sidebar-header">
@@ -21,7 +26,7 @@ export default function Sidebar({ activeTab, onTabChange, onLogout }) {
                 <div className="subtitle">KEBBI INTELLIGENCE</div>
             </div>
             <div className="sidebar-nav">
-                {NAV_ITEMS.map(item => (
+                {visibleItems.map(item => (
                     <div
                         key={item.id}
                         className={`nav-item${activeTab === item.id ? ' active' : ''}`}
@@ -32,6 +37,12 @@ export default function Sidebar({ activeTab, onTabChange, onLogout }) {
                     </div>
                 ))}
             </div>
+            {user && (
+                <div style={{ padding: '8px 12px', borderTop: '1px solid rgba(0,240,255,0.1)', marginTop: 'auto' }}>
+                    <div style={{ fontSize: '0.6rem', color: '#00f0ff' }}>ROLE: {user.role?.toUpperCase()}</div>
+                    <div style={{ fontSize: '0.5rem', color: '#4a5568' }}>{user.clearance}</div>
+                </div>
+            )}
             <div className="sidebar-footer">
                 {onLogout && (
                     <button

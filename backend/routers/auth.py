@@ -1,6 +1,7 @@
 """Authentication Router - Secure Login (V2.1 with bcrypt)"""
 from fastapi import APIRouter, HTTPException, Request
 from models.schemas import LoginRequest, LoginResponse
+from services.rbac import get_user_permissions_summary, Role
 import bcrypt
 import time
 import os
@@ -105,6 +106,10 @@ async def login(req: LoginRequest, request: Request):
     import hashlib
     token = hashlib.sha256(token_seed.encode()).hexdigest()
 
+    # Get RBAC permissions
+    role_enum = Role(user["role"])
+    permissions = get_user_permissions_summary(role_enum)
+
     return {
         "success": True,
         "token": token,
@@ -113,6 +118,7 @@ async def login(req: LoginRequest, request: Request):
             "role": user["role"],
             "clearance": user["clearance"],
             "unit": user["unit"],
+            "permissions": permissions,
         }
     }
 
@@ -121,3 +127,14 @@ async def login(req: LoginRequest, request: Request):
 async def verify_token():
     """Verify authentication token validity."""
     return {"valid": True, "message": "Token verified"}
+
+
+@router.get("/permissions/{username}")
+async def get_permissions(username: str):
+    """Get RBAC permissions for a user."""
+    user = get_users().get(username)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    role_enum = Role(user["role"])
+    return get_user_permissions_summary(role_enum)

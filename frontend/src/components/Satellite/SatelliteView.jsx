@@ -8,6 +8,12 @@ export default function SatelliteView() {
     const cachedHotspots = dataCache.get(CACHE_KEYS.FIRMS_HOTSPOTS);
     const cachedSAR = dataCache.get('sar_products');
     
+    // Get user permissions from localStorage
+    const user = JSON.parse(localStorage.getItem('citadel_user') || '{}');
+    const userRole = user?.role || 'operator';
+    const features = user?.permissions?.features || {};
+    const allowedSatelliteTabs = features.satellite_tabs || ['imagery', 'thermal'];
+    
     const [products, setProducts] = useState(cachedProducts);
     const [hotspots, setHotspots] = useState(cachedHotspots);
     const [sarProducts, setSarProducts] = useState(cachedSAR);
@@ -91,7 +97,9 @@ export default function SatelliteView() {
                 <h2>Satellite Intelligence</h2>
                 <div style={{ display: 'flex', gap: 8 }}>
                     <button className={`btn-neon${activeTab === 'imagery' ? ' btn-filled' : ''}`} onClick={() => setActiveTab('imagery')}>Copernicus</button>
-                    <button className={`btn-neon${activeTab === 'sar' ? ' btn-filled' : ''}`} onClick={() => setActiveTab('sar')} title="Works through clouds">SAR (All-Weather)</button>
+                    {allowedSatelliteTabs.includes('sar') && (
+                        <button className={`btn-neon${activeTab === 'sar' ? ' btn-filled' : ''}`} onClick={() => setActiveTab('sar')} title="Works through clouds">SAR (All-Weather)</button>
+                    )}
                     <button className={`btn-neon${activeTab === 'thermal' ? ' btn-filled' : ''}`} onClick={() => setActiveTab('thermal')}>NASA FIRMS</button>
                 </div>
             </div>

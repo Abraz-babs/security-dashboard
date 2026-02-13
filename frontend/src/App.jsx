@@ -206,7 +206,7 @@ export default function App() {
             <div className="tech-grid-bg" />
             <div className="scan-line-overlay" />
             <div className="app-layout">
-                <Sidebar activeTab={activeTab} onTabChange={setActiveTab} onLogout={handleLogout} />
+                <Sidebar activeTab={activeTab} onTabChange={setActiveTab} onLogout={handleLogout} user={user} />
                 <div className="main-content">
                     <Header
                         dashboardData={dashboardData}
