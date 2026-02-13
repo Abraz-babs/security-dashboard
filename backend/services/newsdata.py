@@ -125,20 +125,52 @@ def _classify_category(text: str) -> str:
 
 
 def _is_security_related(text: str) -> bool:
-    """Check if text is security-related AND relevant to Kebbi region."""
+    """Check if text is security-related AND STRICTLY relevant to Kebbi region.
+    EXCLUDES general Nigeria political news.
+    """
     text_lower = text.lower()
     
-    # Must contain at least one security keyword
-    security_keywords = CRITICAL_WORDS | HIGH_WORDS | MEDIUM_WORDS | {"security", "police", "army", "military", "bandit", "kidnap", "attack"}
-    has_security = any(w in text_lower for w in security_keywords)
+    # STRICT: Must contain at least one CRITICAL security keyword
+    # (bandit, kidnap, attack, kill, terrorist, etc.)
+    critical_security = CRITICAL_WORDS | {"bandit", "kidnap", "abduct", "ambush", "raid", "firefight", "clash"}
+    has_critical_security = any(w in text_lower for w in critical_security)
     
-    # Must contain at least one Kebbi-region reference OR general Nigeria security
-    # If it mentions Kebbi region specifically, it's high priority
-    # If it's general Nigeria security, include but mark lower relevance
-    region_keywords = KEBBI_REGION_WORDS | NEARBY_STATES | {"nigeria"}
-    has_region = any(w in text_lower for w in region_keywords)
+    # Also allow HIGH security words but require explicit Kebbi region mention
+    high_security = HIGH_WORDS
+    has_high_security = any(w in text_lower for w in high_security)
     
-    return has_security and has_region
+    # STRICT REGION FILTER:
+    # Must explicitly mention Kebbi State or bordering states (Sokoto, Zamfara, Niger, Katsina)
+    # OR explicitly mention "northwest" + security
+    # NO general "Nigeria" references allowed
+    strict_region = KEBBI_REGION_WORDS | NEARBY_STATES | {"northwest"}
+    has_strict_region = any(w in text_lower for w in strict_region)
+    
+    # Reject obvious non-security political topics
+    political_noise = {
+        "el-rufai", "ribadu", "tinubu", "fubara", "impeach", "kwankwaso", "election", 
+        "campaign", "vote", "party", "pdp", "apc", "nnpp", "senator", "senate",
+        "health security", "food security", "aid", "foreign aid", "health sovereignty",
+        "job seeker", "recruitment", "promotion", "nba", "bar association", "transparency",
+        "el rufai", "ndlea", "drug fight", "anti-drug", "marwa"
+    }
+    has_political_noise = any(w in text_lower for w in political_noise)
+    
+    # STRICT RULES:
+    # 1. Must have critical security incident (attack, kidnap, kill, etc.)
+    # 2. Must explicitly mention Kebbi region OR northwest
+    # 3. Must NOT be political noise
+    
+    if has_political_noise:
+        return False  # Reject political news
+    
+    if has_critical_security and has_strict_region:
+        return True  # Critical incident in Kebbi region
+    
+    if has_critical_security and "northwest" in text_lower:
+        return True  # Critical incident in northwest
+        
+    return False  # Everything else rejected
 
 
 # ─── Source 1: GNews API (Free 100 req/day) ───
