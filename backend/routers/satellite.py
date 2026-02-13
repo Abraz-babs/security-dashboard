@@ -1,5 +1,7 @@
 """Satellite Router - Copernicus, FIRMS, N2YO, Sentinel Timer (V2)"""
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from services.copernicus import (
     fetch_sentinel_products, get_satellite_passes,
     fetch_sentinel1_products, correlate_fires_to_satellites
@@ -12,11 +14,13 @@ from services.n2yo import (
 from services.sentinel_timer import get_sentinel_passes
 
 router = APIRouter(prefix="/api/satellite", tags=["satellite"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 # ──── Copernicus Endpoints ────
 @router.get("/copernicus/products")
-async def copernicus_products(days: int = 7, limit: int = 10):
+@limiter.limit("30/minute")
+async def copernicus_products(request: Request, days: int = 7, limit: int = 10):
     """Get recent Sentinel-2 products over Kebbi State."""
     return await fetch_sentinel_products(days_back=days, max_results=limit)
 
@@ -74,14 +78,16 @@ async def sentinel_pass_schedule(days: int = 5):
 
 # ──── NEW: SAR (Rainy Season) Endpoints ────
 @router.get("/copernicus/sar")
-async def sentinel1_sar_products(days: int = 7, limit: int = 10):
+@limiter.limit("20/minute")
+async def sentinel1_sar_products(request: Request, days: int = 7, limit: int = 10):
     """Get Sentinel-1 SAR products - works through clouds and at night.
     Use this during rainy season when optical imagery is blocked."""
     return await fetch_sentinel1_products(days_back=days, max_results=limit)
 
 
 @router.get("/correlate/fires")
-async def fire_satellite_correlation(days: int = 3):
+@limiter.limit("30/minute")
+async def fire_satellite_correlation(request: Request, days: int = 3):
     """For each detected fire, find the next satellite pass that can image it.
     Returns imaging recommendations with priority levels."""
     from services.firms import fetch_all_sensors

@@ -1,6 +1,9 @@
 """CITADEL KEBBI - Main FastAPI Application (V2.1)"""
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from config import APP_NAME, APP_VERSION, DEBUG
 from routers import auth, dashboard, satellite, intel, ai
 from services import cache
@@ -8,13 +11,28 @@ from services.data_warmer import warm_all_caches, background_refresh
 import asyncio
 import json
 from datetime import datetime
+import logging
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Rate limiter: 100 requests per minute per IP
+limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
     title=APP_NAME,
     version=APP_VERSION,
     description="Security Intelligence Command Center for Kebbi State",
-    debug=DEBUG,
+    debug=False,  # SECURITY: Disable debug in production
 )
+
+# Add rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS - allow frontend (dev + production)
 app.add_middleware(
@@ -29,6 +47,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = datetime.now()
+    response = await call_next(request)
+    duration = (datetime.now() - start_time).total_seconds()
+    logger.info(f"{request.method} {request.url.path} - {response.status_code} - {duration:.3f}s")
+    return response
 
 # Include routers
 app.include_router(auth.router)

@@ -1,5 +1,7 @@
 """Dashboard Router — Fast, Cached, Dynamic LGA Risk (V2.1)"""
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from config import KEBBI_LGAS, RISK_LEVELS
 from services.firms import fetch_all_sensors
 from services.data_warmer import FALLBACK_INTEL
@@ -11,6 +13,7 @@ import math
 import asyncio
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 def _haversine(lat1, lon1, lat2, lon2):
@@ -80,7 +83,8 @@ async def _get_cached_data():
 
 
 @router.get("/overview")
-async def get_dashboard_overview():
+@limiter.limit("60/minute")  # SECURITY: Rate limit dashboard requests
+async def get_dashboard_overview(request: Request):
     """Full dashboard overview — ALWAYS RETURNS VALID DATA."""
     now = datetime.now()
 
