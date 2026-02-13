@@ -21,20 +21,48 @@ export default function SITREPGenerator() {
 
     const handlePrint = () => {
         if (!sitrep?.sitrep) return;
+        
+        // Check for popup blocker
         const printWin = window.open('', '_blank');
-        printWin.document.write(`
-      <html><head><title>SITREP - CITADEL KEBBI</title>
-      <style>body{font-family:'Courier New',monospace;padding:40px;font-size:12px;line-height:1.8;}
-      h1{font-size:16px;text-align:center;border-bottom:2px solid #000;padding-bottom:10px;}
-      .classification{text-align:center;font-weight:bold;color:red;margin:10px 0;}</style></head>
-      <body><div class="classification">TOP SECRET // KEBBI STATE GOVERNMENT</div>
-      <h1>SITUATION REPORT (SITREP)</h1>
-      <div class="classification">CITADEL KEBBI INTELLIGENCE COMMAND CENTER</div>
-      <pre>${sitrep.sitrep}</pre>
-      <div class="classification">TOP SECRET // KEBBI STATE GOVERNMENT</div></body></html>
-    `);
+        if (!printWin) {
+            alert('Please allow popups to print SITREP');
+            return;
+        }
+        
+        const content = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SITREP - CITADEL KEBBI</title>
+    <style>
+        body { font-family: 'Courier New', monospace; padding: 40px; font-size: 12px; line-height: 1.8; }
+        h1 { font-size: 16px; text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .classification { text-align: center; font-weight: bold; color: red; margin: 10px 0; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+        @media print {
+            body { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="classification">TOP SECRET // KEBBI STATE GOVERNMENT</div>
+    <h1>SITUATION REPORT (SITREP)</h1>
+    <div class="classification">CITADEL KEBBI INTELLIGENCE COMMAND CENTER</div>
+    <pre>${sitrep.sitrep.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+    <div class="classification">TOP SECRET // KEBBI STATE GOVERNMENT</div>
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 250);
+        };
+    </script>
+</body>
+</html>`;
+        
+        printWin.document.write(content);
         printWin.document.close();
-        printWin.print();
     };
 
     return (
