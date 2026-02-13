@@ -22,7 +22,7 @@ export default function SITREPGenerator() {
     const handlePrint = () => {
         if (!sitrep?.sitrep) return;
         
-        // Check for popup blocker
+        // Check for popup blocker - v2 fix
         const printWin = window.open('', '_blank');
         if (!printWin) {
             alert('Please allow popups to print SITREP');
