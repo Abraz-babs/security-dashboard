@@ -38,13 +38,14 @@ KEBBI_REGION_WORDS = {
     "ngaski", "arewa dandi", "shanga", "suru", "koko", "besse",
     
     # Border States (Nigeria) - Security issues here spill into Kebbi
-    "sokoto", "sokoto state",                    # Northern neighbor
-    "zamfara", "zamfara state",                  # Eastern neighbor  
-    "niger", "niger state",                      # Southeastern neighbor
-    "katsina", "katsina state",                  # Northeast (same region)
+    "sokoto", "sokoto state",                    # Northern neighbor (Nigerian state)
+    "zamfara", "zamfara state",                  # Eastern neighbor (Nigerian state)
+    "niger state",                               # Southeastern neighbor (NIGERIAN STATE - capital Minna)
+    "katsina", "katsina state",                  # Northeast (Nigerian state)
     
-    # Border Countries (International)
-    "niger republic", "niger", "benin republic", "benin",  # North/West borders
+    # Border Countries (International) - DIFFERENT from Nigerian states!
+    "niger republic",                            # Country to the NORTH (DIFFERENT from Niger State! Capital Niamey)
+    "benin republic", "benin",                   # Country to the WEST
     
     # Regional security terms
     "northwest nigeria", "north west", "north-west", "sahel", "sahelian",
