@@ -40,6 +40,13 @@ CONTEXT:
 - You have access to satellite imagery (Copernicus Sentinel), fire/thermal data (NASA FIRMS), satellite tracking (N2YO), and OSINT feeds
 - Current high-risk LGAs: Fakai, Sakaba, Wasagu/Danko, Zuru (southern corridor), Dandi, Augie, Koko/Besse, Ngaski, Yauri, Shanga
 
+GEOGRAPHIC ACCURACY RULES:
+- When given coordinates, you MUST use the provided geographic context data
+- NEVER estimate distances or directions - use the calculated values provided
+- Border distances are calculated using accurate Haversine formula
+- Reference specific LGAs based on the geographic context provided
+- Use "approximately" only when the system provides approximate data
+
 BEHAVIOR:
 - Speak with military precision - concise, factual, actionable
 - Reference specific LGAs and coordinates when relevant
@@ -47,6 +54,7 @@ BEHAVIOR:
 - Provide recommendations in order of priority
 - Use NATO/military terminology where appropriate
 - Be direct and unambiguous
+- Only state facts that are supported by the data provided
 
 FORMAT: Structure responses with clear headers, bullet points, and threat classifications when appropriate."""
 
@@ -210,6 +218,8 @@ Use NATO DTG format. Be specific about LGAs. Current year is {now.year}, month {
 
 def _format_dashboard_data(data: dict) -> str:
     """Format dashboard data for AI consumption."""
+    from services.geography import format_geographic_description, get_geographic_context
+    
     parts = [f"Report Generated: {_current_datetime()}"]
     if data.get("threat_level"):
         parts.append(f"Overall Threat Level: {data['threat_level']}")
@@ -228,7 +238,16 @@ def _format_dashboard_data(data: dict) -> str:
             parts.append(f"Fire/Thermal Anomalies: {len(hotspots)} detected")
             for h in hotspots[:5]:
                 if isinstance(h, dict):
-                    parts.append(f"  - Lat: {h.get('latitude')}, Lon: {h.get('longitude')}, Brightness: {h.get('brightness')}")
+                    lat = h.get('latitude')
+                    lon = h.get('longitude')
+                    parts.append(f"  - Lat: {lat}, Lon: {lon}, Brightness: {h.get('brightness')}")
+                    # Add accurate geographic context
+                    if lat and lon:
+                        try:
+                            geo_ctx = format_geographic_description(lat, lon)
+                            parts.append(f"    GEOGRAPHIC CONTEXT:\n    {geo_ctx.replace(chr(10), chr(10)+'    ')}")
+                        except Exception:
+                            pass
     if data.get("intel_reports"):
         reports = data["intel_reports"]
         if isinstance(reports, list):
@@ -237,3 +256,98 @@ def _format_dashboard_data(data: dict) -> str:
                 if isinstance(r, dict):
                     parts.append(f"  - [{r.get('severity', 'N/A').upper()}] {r.get('title', 'No title')}")
     return "\n".join(parts) if parts else "No data available for analysis."
+
+
+def answer_geographic_query(lat: float, lon: float, query_type: str = "general") -> str:
+    """
+    Answer geographic questions with ACCURATE calculated data.
+    Uses the geography module for precise distances and locations.
+    """
+    from services.geography import get_geographic_context, format_geographic_description
+    
+    # Get accurate geographic context
+    context = get_geographic_context(lat, lon)
+    geo_description = format_geographic_description(lat, lon)
+    
+    now = _current_datetime()
+    
+    # Build prompt with accurate data
+    prompt = f"""GEOGRAPHIC ANALYSIS REQUEST - {now}
+
+Coordinates: {lat}°N, {lon}°E
+
+ACCURATE GEOGRAPHIC CONTEXT (calculated using Haversine formula):
+{geo_description}
+
+Query Type: {query_type}
+
+Provide a precise geographic assessment including:
+1. EXACT location (LGA, nearest landmarks)
+2. BORDER PROXIMITY with accurate distances
+3. RIVER/GEOGRAPHIC FEATURES nearby
+4. NEAREST TOWNS with distances
+5. SECURITY RELEVANCE of this location
+
+Use only the provided distances and locations. Do not estimate."""
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": prompt}
+    ]
+    
+    return _call_llm(messages, temperature=0.2, max_tokens=1500)
+
+
+def analyze_location_security(lat: float, lon: float) -> str:
+    """
+    Provide security-focused geographic analysis for specific coordinates.
+    Uses accurate border distances and threat assessments.
+    """
+    from services.geography import get_geographic_context
+    
+    context = get_geographic_context(lat, lon)
+    now = _current_datetime()
+    
+    # Build security-focused prompt
+    security_info = ""
+    if "security_assessment" in context:
+        sec = context["security_assessment"]
+        security_info = f"""
+SECURITY ASSESSMENT DATA:
+- Risk Level: {sec['risk_level'].upper()}
+- Proximity to Border: {sec['proximity_to_border']}
+- Threat Note: {sec['note']}
+"""
+    
+    border_info = ""
+    if "nearest_border" in context:
+        border = context["nearest_border"]
+        border_info = f"""
+BORDER DATA (accurate):
+- Nearest Border: {border['name']}
+- Distance: {border['distance_km']} km
+- Direction: {border['direction']}
+"""
+    
+    prompt = f"""SECURITY GEOGRAPHIC ANALYSIS - {now}
+
+TARGET COORDINATES: {lat}°N, {lon}°E
+
+{border_info}
+{security_info}
+
+Provide a security assessment including:
+1. TACTICAL LOCATION ASSESSMENT
+2. BORDER VULNERABILITY (if near border)
+3. CROSS-BORDER THREAT POTENTIAL
+4. RECOMMENDED SECURITY POSTURE
+5. MONITORING PRIORITY
+
+Be specific about distances and use military terminology."""
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": prompt}
+    ]
+    
+    return _call_llm(messages, temperature=0.2, max_tokens=1500)
