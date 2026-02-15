@@ -514,3 +514,87 @@ Provide:
     ]
     
     return _call_llm(messages, temperature=0.2, max_tokens=1500)
+
+
+async def handle_satellite_query(user_query: str, lga: str = None) -> str:
+    """
+    Handle satellite imagery queries with REAL data.
+    Never hallucinates - always uses actual satellite analysis.
+    """
+    from services.satellite_analysis import get_detailed_satellite_security_report
+    
+    now = _current_datetime()
+    
+    # If no LGA specified, ask for clarification
+    if not lga:
+        # Try to extract LGA from query
+        import re
+        lgas = ["argungu", "birnin kebbi", "yauri", "zuru", "jega", "kamba", 
+                "bagudo", "fakai", "sakaba", "wasagu", "danko", "suru", "shanga"]
+        
+        query_lower = user_query.lower()
+        for possible_lga in lgas:
+            if possible_lga in query_lower:
+                lga = possible_lga.title()
+                break
+        
+        if not lga:
+            return """[SYSTEM MESSAGE]
+
+To provide satellite imagery analysis, please specify which LGA (Local Government Area) you're interested in.
+
+Example: "Satellite analysis for Argungu LGA" or "Imagery in Zuru"
+
+Available LGAs include: Argungu, Birnin Kebbi, Yauri, Zuru, Jega, Kamba, Bagudo, Fakai, Sakaba, Wasagu/Danko, etc."""
+    
+    # Fetch REAL satellite data
+    try:
+        satellite_report = await get_detailed_satellite_security_report(lga)
+    except Exception as e:
+        satellite_report = f"Error fetching satellite data: {str(e)}"
+    
+    # Build comprehensive prompt with real data
+    prompt = f"""SATELLITE IMAGERY SECURITY ANALYSIS REQUEST
+Timestamp: {now}
+Location: {lga} LGA, Kebbi State
+
+{satellite_report}
+
+ANALYSIS REQUIREMENTS:
+Based on the satellite data provided above, analyze:
+
+1. DATA AVAILABILITY
+   - What satellite imagery is actually available (dates, sensors)
+   - Cloud cover limitations
+   - Data quality assessment
+
+2. SECURITY-RELEVANT OBSERVATIONS
+   - ONLY mention what can actually be detected (see CAPABILITY LIMITATIONS)
+   - Reference specific images/dates if available
+   - Note data gaps where imagery is insufficient
+
+3. TACTICAL ASSESSMENT
+   - What the available imagery reveals about terrain, infrastructure
+   - Potential security implications based on geography
+   - Limitations of satellite-only assessment
+
+4. RECOMMENDATIONS
+   - What additional data sources are needed
+   - Ground verification priorities
+   - Optimal timing for future satellite passes
+
+RULES:
+- ONLY use data provided in the SATELLITE IMAGERY ANALYSIS section
+- NEVER claim to see individuals or small groups
+- ALWAYS acknowledge limitations (clouds, resolution, timing)
+- If insufficient data, clearly state: "Insufficient satellite coverage for comprehensive assessment"
+- Suggest ground verification for areas of concern
+
+Format with clear headers and professional military tone."""
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": prompt}
+    ]
+    
+    return _call_llm(messages, temperature=0.2, max_tokens=2000)

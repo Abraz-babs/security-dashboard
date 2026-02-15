@@ -146,3 +146,47 @@ async def clear_chat_history():
     """Clear chat history."""
     _chat_histories.clear()
     return {"status": "cleared"}
+
+
+@router.get("/satellite-analysis/{lga}")
+async def satellite_analysis(lga: str):
+    """
+    Get detailed satellite imagery analysis for an LGA.
+    Uses REAL satellite data from Copernicus.
+    """
+    from services.satellite_analysis import get_detailed_satellite_security_report
+    
+    try:
+        report = await get_detailed_satellite_security_report(lga)
+        return {
+            "lga": lga,
+            "analysis": report,
+            "timestamp": datetime.utcnow().isoformat(),
+            "data_source": "Copernicus Data Space",
+        }
+    except Exception as e:
+        return {
+            "lga": lga,
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+
+
+@router.post("/chat/satellite")
+async def chat_satellite_query(request: dict):
+    """
+    Chat endpoint specifically for satellite imagery queries.
+    Uses real satellite data to answer questions.
+    """
+    from services.groq_ai import handle_satellite_query
+    
+    query = request.get("message", "")
+    lga = request.get("lga")
+    
+    response = await handle_satellite_query(query, lga)
+    
+    return {
+        "response": response,
+        "timestamp": datetime.utcnow().isoformat(),
+        "query_type": "satellite_analysis",
+    }
