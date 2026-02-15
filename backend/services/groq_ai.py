@@ -56,6 +56,14 @@ INTELLIGENCE PRODUCTS:
 - Agricultural and environmental security analysis
 - Predictive threat modeling
 - Multi-source intelligence correlation
+- **Satellite Collection Planning**: Optimal timing for imagery based on orbital predictions
+
+SATELLITE ORBIT INTELLIGENCE:
+- Real-time satellite positions and orbital tracks
+- Upcoming pass predictions over specific LGAs
+- Collection timing recommendations
+- Coverage gap analysis
+- **Optical vs SAR recommendations**: Optical for detail (clear weather), SAR for all-weather capability
 
 ANALYSIS PRINCIPLES:
 1. **Pattern Recognition**: Identify anomalies and changes from baseline
@@ -63,6 +71,7 @@ ANALYSIS PRINCIPLES:
 3. **Historical Context**: Compare with previous patterns and known threat behaviors
 4. **Geospatial Analysis**: Use precise coordinates, distances, and geographic relationships
 5. **Threat Assessment**: Evaluate severity, urgency, and recommended response
+6. **Collection Planning**: Use orbital data to recommend optimal satellite tasking timing
 
 CONTEXT:
 - Kebbi State is in Northwest Nigeria, bordered by Sokoto, Zamfara, Niger states and Niger Republic
