@@ -85,6 +85,8 @@ BEHAVIOR:
 - Provide confident, authoritative analysis
 - Use intelligence terminology appropriately
 - Reference specific LGAs, coordinates, and satellite sources
+- **ALWAYS include exact coordinates (Lat, Lon) for every location mentioned**
+- **Format coordinates as: 11.423°N, 5.782°E or (11.423, 5.782)**
 - Classify threats by severity: CRITICAL, HIGH, MEDIUM, LOW
 - Provide prioritized recommendations
 - Be direct and unambiguous
@@ -92,7 +94,14 @@ BEHAVIOR:
 - When discussing limitations, frame as "current sensor constraints" rather than system failures
 - Use phrases like "Intelligence suggests..." and "Analysis indicates..."
 
-FORMAT: Structure responses with clear headers, bullet points, classified threat levels, and actionable recommendations. Present information as professional intelligence briefing."""
+COORDINATE REPORTING REQUIREMENTS:
+1. **Every location mentioned must include coordinates**: "Fakai LGA (11.42°N, 5.78°E)"
+2. **Every fire hotspot must include exact coordinates**: "Thermal anomaly at 11.423°N, 5.781°E"
+3. **Every detection must reference coordinates**: "New clearing detected at coordinates (11.415, 5.795)"
+4. **Border crossings must specify coordinates**: "Suspicious activity near border at 12.123°N, 3.456°E"
+5. **Recommendations must reference coordinates**: "Deploy patrol to 11.420°N, 5.780°E"
+
+FORMAT: Structure responses with clear headers, bullet points, classified threat levels, and actionable recommendations. Present information as professional intelligence briefing. **Every geographic reference must include precise coordinates in parentheses.**"""
 
 
 def _call_groq(messages: list, temperature: float = 0.3, max_tokens: int = 2048) -> str:
@@ -685,44 +694,47 @@ Query Focus: {query_focus}
 
 {formatted_report}
 
+CRITICAL: Include exact coordinates (latitude, longitude) for EVERY location mentioned.
+Format: 11.423°N, 5.781°E or (11.423, 5.781)
+
 INTELLIGENCE ANALYSIS REQUIREMENTS:
 
 Based on the multi-source data above, provide a COMPREHENSIVE assessment covering:
 
 1. EXECUTIVE SUMMARY
-   - Overall threat level for {lga}
-   - Key security concerns identified
+   - Overall threat level for {lga} (include LGA center coordinates)
+   - Key security concerns identified with exact coordinates
    - Confidence level of assessment
 
 2. {query_focus.upper().replace('_', ' ')} ANALYSIS
    - Detailed analysis specific to the query focus
-   - Evidence from FIRMS, Sentinel, and OSINT
-   - Pattern analysis and trends
+   - Evidence from FIRMS, Sentinel, and OSINT with coordinates
+   - Pattern analysis and trends with geographic references
 
 3. MULTI-SOURCE CORRELATION
-   - How different data sources confirm/contradict each other
+   - How different data sources confirm/contradict each other at specific coordinates
    - Cross-validation of indicators
    - Data gaps and limitations
 
 4. THREAT ACTORS & METHODS
    - Likely threat actors (bandits, illegal miners, traffickers)
    - Operating methods based on evidence
-   - Capabilities and limitations
+   - Known coordinates of threat activity
 
 5. GEOGRAPHIC ANALYSIS
-   - Specific locations of concern
-   - Movement corridors
-   - Safe vs high-risk zones
-   - Border proximity implications
+   - Specific locations of concern WITH COORDINATES
+   - Movement corridors with coordinate waypoints
+   - Safe vs high-risk zones with bounding coordinates
+   - Border proximity implications with distances
 
 6. TIMELINE & PATTERNS
-   - When activity detected (time of day, season)
+   - When activity detected (time of day, season) at specific coordinates
    - Frequency and escalation trends
    - Predictive indicators
 
 7. OPERATIONAL RECOMMENDATIONS
-   - Immediate actions (next 24 hours)
-   - Short-term measures (next week)
+   - Immediate actions (next 24 hours) with target coordinates
+   - Short-term measures (next week) with patrol coordinates
    - Long-term strategy
    - Resource requirements
    - Coordination needs (NSCDC, Police, Military)

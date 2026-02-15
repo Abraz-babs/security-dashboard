@@ -189,8 +189,11 @@ LIMITATION: Cannot provide satellite-based assessment without imagery data.
     lines = [
         f"SATELLITE IMAGERY ANALYSIS - {analysis['lga']} LGA",
         f"Analysis Time: {analysis['analysis_timestamp']}",
-        f"Coordinates: {analysis['coordinates']['lat']}°N, {analysis['coordinates']['lon']}°E",
+        f"LGA Center Coordinates: {analysis['coordinates']['lat']}°N, {analysis['coordinates']['lon']}°E",
         f"Period: {analysis['period_covered']}",
+        "",
+        "IMPORTANT: Always include exact coordinates (Lat, Lon) for every location mentioned in your analysis.",
+        "Example: 'Detection at 11.423°N, 5.781°E' or 'Area near (11.415, 5.795)'",
         "",
         "AVAILABLE SATELLITE DATA:",
     ]
@@ -468,8 +471,11 @@ Current satellite positions and pass predictions could not be retrieved.
     
     lines = [
         "SATELLITE ORBIT INTELLIGENCE",
-        f"Location: {orbit_data['location'].get('lga', 'Unknown')} ({orbit_data['location']['lat']}°N, {orbit_data['location']['lon']}°E)",
+        f"Target Location: {orbit_data['location'].get('lga', 'Unknown')}",
+        f"Target Coordinates: {orbit_data['location']['lat']}°N, {orbit_data['location']['lon']}°E",
         f"Report Time: {orbit_data['timestamp']}",
+        "",
+        "NOTE: When providing analysis, always reference exact coordinates for all locations mentioned.",
         "",
         "UPCOMING SATELLITE PASSES:",
     ]
