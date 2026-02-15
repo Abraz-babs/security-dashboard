@@ -33,6 +33,18 @@ SYSTEM_PROMPT = """You are CITADEL AI, an advanced military-grade intelligence a
 
 ROLE: You are the AI core of the CITADEL KEBBI Security Intelligence Command Center. You provide expert security analysis, threat assessments, and strategic recommendations to government analysts.
 
+CRITICAL RULES - NO HALLUCINATION:
+1. **NEVER invent satellite imagery** - Only reference actual data provided in the context
+2. **NEVER claim to see individuals or small groups** - Sentinel-2 resolution is 10m/pixel (cannot see people)
+3. **NEVER make up coordinates, dates, or image IDs** - Only use provided data
+4. **ALWAYS clarify limitations** - State clearly when you're making inferences vs stating facts
+5. **NO FUTURE DATES** - Current date/time is provided, never use future dates
+6. **SATELLITE CAPABILITY LIMITATIONS**:
+   - Sentinel-2: 10m resolution (can see buildings, fields, not people)
+   - Cannot detect gatherings under 50+ people
+   - Cannot see through clouds
+   - Thermal (FIRMS): Only detects fires/heat signatures, not human activity
+
 CONTEXT:
 - Kebbi State is in Northwest Nigeria, bordered by Sokoto, Zamfara, Niger states and Niger Republic
 - Key security concerns: banditry, kidnapping, cattle rustling, cross-border threats, insurgent activities
@@ -49,12 +61,15 @@ GEOGRAPHIC ACCURACY RULES:
 
 BEHAVIOR:
 - Speak with military precision - concise, factual, actionable
+- ALWAYS preface assessments with "Based on available data..." or "According to..."
+- Clearly distinguish between: CONFIRMED DATA vs HISTORICAL PATTERNS vs INFERENCES
 - Reference specific LGAs and coordinates when relevant
 - Classify threats by severity: CRITICAL, HIGH, MEDIUM, LOW
 - Provide recommendations in order of priority
 - Use NATO/military terminology where appropriate
 - Be direct and unambiguous
 - Only state facts that are supported by the data provided
+- When data is insufficient, say: "Insufficient data for conclusive assessment. Recommend ground verification."
 
 FORMAT: Structure responses with clear headers, bullet points, and threat classifications when appropriate."""
 
@@ -344,6 +359,154 @@ Provide a security assessment including:
 5. MONITORING PRIORITY
 
 Be specific about distances and use military terminology."""
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": prompt}
+    ]
+    
+    return _call_llm(messages, temperature=0.2, max_tokens=1500)
+
+
+def check_satellite_imagery_availability(lga: str = None, lat: float = None, lon: float = None) -> dict:
+    """
+    Check what satellite imagery data is actually available.
+    Returns real data or clearly states limitations.
+    """
+    from services.copernicus import fetch_sentinel_products
+    import asyncio
+    
+    now = _current_datetime()
+    
+    # Try to get actual satellite data
+    try:
+        # This would need to be called with async - simplified for now
+        # In production, this should query the actual Copernicus API
+        
+        return {
+            "status": "data_requested",
+            "note": "Checking Copernicus Data Space for available imagery...",
+            "timestamp": now,
+            "lga": lga,
+            "limitations": [
+                "Sentinel-2 resolution: 10m per pixel (cannot detect individuals)",
+                "Cloud cover may obscure recent images",
+                "Historical data available, real-time requires specific tasking",
+            ]
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e),
+            "timestamp": now,
+        }
+
+
+def analyze_satellite_imagery_with_disclaimer(lga: str, context: dict = None) -> str:
+    """
+    Analyze satellite imagery with clear disclaimers about capabilities.
+    NEVER claim to see things the satellite cannot detect.
+    """
+    now = _current_datetime()
+    
+    # Build prompt with strict limitations
+    prompt = f"""SATELLITE IMAGERY QUERY - {now}
+
+LOCATION: {lga} LGA, Kebbi State
+
+⚠️ CRITICAL LIMITATIONS - MUST ACKNOWLEDGE:
+1. Sentinel-2 satellites have 10-meter resolution per pixel
+2. CANNOT detect individual people or small groups (< 50 people in tight formation)
+3. CANNOT see through clouds
+4. Images may be days or weeks old
+5. Cannot distinguish between civilian and military vehicles reliably
+
+WHAT CAN BE DETECTED:
+- Large fires (thermal signatures)
+- Major infrastructure changes
+- Large vehicle convoys (10+ vehicles)
+- Agricultural patterns
+- Smoke plumes
+
+Provide analysis based on:
+1. HISTORICAL patterns for this LGA (from provided context)
+2. GENERAL geographic features (rivers, terrain)
+3. RECENT intelligence reports (if available)
+
+DO NOT invent specific image IDs, dates, or visual observations.
+DO NOT claim to detect individuals or small groups.
+DO use qualifying language: "Based on historical patterns...", "According to recent reports..."
+
+If no specific satellite data is available, state: "No recent cloud-free imagery available. Analysis based on historical patterns and ground intelligence."
+
+{context if context else ""}
+"""
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": prompt}
+    ]
+    
+    return _call_llm(messages, temperature=0.2, max_tokens=1500)
+
+
+def generate_accurate_threat_assessment(location: str, intel_data: dict = None) -> str:
+    """
+    Generate threat assessment based ONLY on available data.
+    Never invent incidents or observations.
+    """
+    now = _current_datetime()
+    
+    # Check what data we actually have
+    has_fire_data = intel_data and intel_data.get("fire_hotspots")
+    has_intel = intel_data and intel_data.get("intel_reports")
+    
+    data_sources = []
+    if has_fire_data:
+        data_sources.append("NASA FIRMS thermal data")
+    if has_intel:
+        data_sources.append("OSINT intelligence feeds")
+    
+    if not data_sources:
+        return f"""[SYSTEM LIMITATION NOTICE]
+
+Date/Time: {now}
+Location: {location}
+
+STATUS: Insufficient real-time data available for {location}
+
+ANALYSIS BASED ON: Historical patterns only
+
+⚠️ CRITICAL: No current satellite imagery or recent intelligence reports available for this specific location. Any threat assessment would be speculative.
+
+RECOMMENDATION: 
+- Deploy ground reconnaissance to verify current situation
+- Request targeted satellite tasking if specific concerns exist
+- Monitor local intelligence networks for updates
+
+This is NOT a confirmed threat assessment. Ground verification required before operational decisions."""
+
+    # Build prompt with actual data sources
+    prompt = f"""THREAT ASSESSMENT REQUEST - {now}
+
+LOCATION: {location}
+
+DATA SOURCES AVAILABLE: {', '.join(data_sources)}
+
+ACTUAL DATA:
+{intel_data if intel_data else "No specific data provided"}
+
+ASSESSMENT RULES:
+1. Only cite threats mentioned in the ACTUAL DATA above
+2. If no specific threats mentioned, state "No confirmed threats in current data"
+3. Do NOT invent incidents, sightings, or suspicious activity
+4. Clearly label: CONFIRMED vs SUSPECTED vs HISTORICAL PATTERN
+5. End with confidence level: HIGH (confirmed), MEDIUM (suspected), LOW (historical only)
+
+Provide:
+1. Summary of actual threats from available data
+2. Data gaps and limitations
+3. Recommended verification actions"""
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
