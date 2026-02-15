@@ -5,7 +5,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from config import APP_NAME, APP_VERSION, DEBUG
-from routers import auth, dashboard, satellite, intel, ai
+from routers import auth, dashboard, satellite, intel, ai, intelligence
 from services import cache
 from services.data_warmer import warm_all_caches, background_refresh
 import asyncio
@@ -66,6 +66,7 @@ app.include_router(dashboard.router)
 app.include_router(satellite.router)
 app.include_router(intel.router)
 app.include_router(ai.router)
+app.include_router(intelligence.router)
 
 
 @app.get("/")

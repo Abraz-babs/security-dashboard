@@ -598,3 +598,130 @@ Format with clear headers and professional military tone."""
     ]
     
     return _call_llm(messages, temperature=0.2, max_tokens=2000)
+
+
+async def handle_comprehensive_security_query(user_query: str, lga: str = None) -> str:
+    """
+    Handle security queries with COMPREHENSIVE multi-source intelligence.
+    First-class analysis integrating all satellite and data sources.
+    """
+    from services.security_intelligence_engine import ComprehensiveSecurityReport, format_security_report_for_ai
+    
+    now = _current_datetime()
+    
+    # Extract LGA if not provided
+    if not lga:
+        import re
+        lgas = ["argungu", "birnin kebbi", "yauri", "zuru", "jega", "kamba", 
+                "bagudo", "fakai", "sakaba", "wasagu", "danko", "suru", "shanga",
+                "augie", "aleiro", "ngaski", "dandi", "gwandu", "maiyama", "bunza", "kalgo"]
+        
+        query_lower = user_query.lower()
+        for possible_lga in lgas:
+            if possible_lga in query_lower:
+                lga = possible_lga.title()
+                break
+        
+        if not lga:
+            return "Please specify which LGA (Local Government Area) for security analysis."
+    
+    # Fetch COMPREHENSIVE security report
+    try:
+        report = await ComprehensiveSecurityReport.generate_full_report(lga, days_back=7)
+        formatted_report = format_security_report_for_ai(report)
+    except Exception as e:
+        return f"Error generating security report: {str(e)}"
+    
+    # Determine query type for tailored response
+    query_lower = user_query.lower()
+    query_focus = "general"
+    
+    if any(word in query_lower for word in ["mining", "kiln", "gold", "pit"]):
+        query_focus = "illegal_mining"
+    elif any(word in query_lower for word in ["border", "crossing", "niger", "benin"]):
+        query_focus = "border_security"
+    elif any(word in query_lower for word in ["fire", "burning", "arson", "thermal"]):
+        query_focus = "fire_analysis"
+    elif any(word in query_lower for word in ["bandit", "camp", "kidnap"]):
+        query_focus = "bandit_activity"
+    elif any(word in query_lower for word in ["trafficking", "human", "drug"]):
+        query_focus = "trafficking"
+    
+    # Build comprehensive prompt
+    prompt = f"""COMPREHENSIVE SECURITY INTELLIGENCE ANALYSIS
+Timestamp: {now}
+Location: {lga} LGA, Kebbi State
+Query Focus: {query_focus}
+
+{formatted_report}
+
+INTELLIGENCE ANALYSIS REQUIREMENTS:
+
+Based on the multi-source data above, provide a COMPREHENSIVE assessment covering:
+
+1. EXECUTIVE SUMMARY
+   - Overall threat level for {lga}
+   - Key security concerns identified
+   - Confidence level of assessment
+
+2. {query_focus.upper().replace('_', ' ')} ANALYSIS
+   - Detailed analysis specific to the query focus
+   - Evidence from FIRMS, Sentinel, and OSINT
+   - Pattern analysis and trends
+
+3. MULTI-SOURCE CORRELATION
+   - How different data sources confirm/contradict each other
+   - Cross-validation of indicators
+   - Data gaps and limitations
+
+4. THREAT ACTORS & METHODS
+   - Likely threat actors (bandits, illegal miners, traffickers)
+   - Operating methods based on evidence
+   - Capabilities and limitations
+
+5. GEOGRAPHIC ANALYSIS
+   - Specific locations of concern
+   - Movement corridors
+   - Safe vs high-risk zones
+   - Border proximity implications
+
+6. TIMELINE & PATTERNS
+   - When activity detected (time of day, season)
+   - Frequency and escalation trends
+   - Predictive indicators
+
+7. OPERATIONAL RECOMMENDATIONS
+   - Immediate actions (next 24 hours)
+   - Short-term measures (next week)
+   - Long-term strategy
+   - Resource requirements
+   - Coordination needs (NSCDC, Police, Military)
+
+8. INTELLIGENCE GAPS
+   - What we don't know
+   - Recommended collection priorities
+   - Ground verification needs
+
+CAPABILITY LIMITATIONS TO ACKNOWLEDGE:
+- Cannot detect individuals or small groups (<50 people)
+- Cannot see through clouds (optical satellites)
+- Images may be 1-5 days old
+- Cannot determine intent, only activity
+- Human trafficking indicators are circumstantial only
+
+MANDATORY DISCLAIMERS:
+- Distinguish between CONFIRMED (multiple sources) and SUSPECTED (single indicator)
+- State confidence levels for each claim
+- Note when analysis is based on historical patterns vs current data
+- Recommend ground verification for all operational decisions
+
+Format as professional military intelligence briefing.
+Use clear headers, bullet points, and severity classifications.
+"""
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": prompt}
+    ]
+    
+    return _call_llm(messages, temperature=0.2, max_tokens=3000)
