@@ -81,9 +81,9 @@ MAJOR_TOWNS = {
     "kamba": Location("Kamba", 11.8516, 3.6542, "town", "Border town with Niger Republic"),
     "bagudo": Location("Bagudo", 11.4045, 4.2249, "town", "Western Kebbi border area"),
     "fakai": Location("Fakai", 11.6333, 4.8333, "town", "Southeastern Kebbi, Zamfara border"),
-    "sakaba": Location("Sakaba", 11.4500, 5.3500, "town", "Northeastern border area"),
-    "wasagu": Location("Wasagu", 11.3500, 5.4500, "town", "Border with Zamfara"),
-    "danko": Location("Danko", 11.4000, 5.5000, "town", "Border area"),
+    "sakaba": Location("Sakaba", 11.0833, 5.6167, "town", "Eastern Kebbi - border with Niger State (CORRECTED)"),
+    "wasagu": Location("Wasagu", 11.3500, 5.4500, "town", "Wasagu/Danko LGA - border with Zamfara State (CORRECTED)"),
+    "danko": Location("Danko", 11.3200, 5.4800, "town", "Wasagu/Danko LGA - southeastern Kebbi (CORRECTED)"),
 }
 
 # HIGH-RISK BORDER LGAs
