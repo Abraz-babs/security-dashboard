@@ -71,19 +71,37 @@ RIVERS = {
     }
 }
 
-# MAJOR TOWNS WITH ACCURATE COORDINATES
+# MAJOR TOWNS WITH VERIFIED COORDINATES (Synchronized with config.py)
 MAJOR_TOWNS = {
-    "birnin_kebbi": Location("Birnin Kebbi", 12.4539, 4.1975, "town", "State Capital"),
+    # Northern Kebbi
+    "aleiro": Location("Aleiro", 12.3167, 4.6833, "town", "Aleiro LGA headquarters"),
+    "arewa_dandi": Location("Arewa Dandi", 12.5833, 4.4167, "town", "Arewa Dandi LGA headquarters"),
     "argungu": Location("Argungu", 12.7448, 4.5251, "town", "Famous for Argungu Fishing Festival"),
-    "yauri": Location("Yauri", 12.5086, 4.5607, "town", "Historic town with hydroelectric dam"),
-    "zuru": Location("Zuru", 11.4308, 5.2309, "town", "Headquarters of Zuru LGA"),
+    "augie": Location("Augie", 12.8833, 4.3167, "town", "Augie LGA headquarters"),
+    "birnin_kebbi": Location("Birnin Kebbi", 12.4539, 4.1975, "town", "State Capital"),
+    "bunza": Location("Bunza", 12.6667, 4.0167, "town", "Bunza LGA headquarters"),
+    "gwandu": Location("Gwandu", 12.5000, 4.4667, "town", "Gwandu Emirate headquarters"),
     "jega": Location("Jega", 12.2236, 4.3791, "town", "Major commercial center"),
-    "kamba": Location("Kamba", 11.8516, 3.6542, "town", "Border town with Niger Republic"),
-    "bagudo": Location("Bagudo", 11.4045, 4.2249, "town", "Western Kebbi border area"),
-    "fakai": Location("Fakai", 11.6333, 4.8333, "town", "Southeastern Kebbi, Zamfara border"),
-    "sakaba": Location("Sakaba", 11.0833, 5.6167, "town", "Eastern Kebbi - border with Niger State (CORRECTED)"),
-    "wasagu": Location("Wasagu", 11.3500, 5.4500, "town", "Wasagu/Danko LGA - border with Zamfara State (CORRECTED)"),
-    "danko": Location("Danko", 11.3200, 5.4800, "town", "Wasagu/Danko LGA - southeastern Kebbi (CORRECTED)"),
+    "kalgo": Location("Kalgo", 12.3167, 4.2000, "town", "Kalgo LGA headquarters"),
+    "maiyama": Location("Maiyama", 12.0833, 4.6167, "town", "Maiyama LGA headquarters"),
+    
+    # Western Kebbi
+    "bagudo": Location("Bagudo", 11.4045, 4.2249, "town", "Bagudo LGA headquarters"),
+    "dandi": Location("Dandi", 11.7333, 3.8833, "town", "Dandi LGA headquarters"),
+    "koko_besse": Location("Koko/Besse", 11.4167, 4.1333, "town", "Koko/Besse LGA headquarters"),
+    "ngaski": Location("Ngaski", 10.9667, 4.0833, "town", "Ngaski LGA headquarters"),
+    "shanga": Location("Shanga", 11.2167, 4.5833, "town", "Shanga LGA headquarters"),
+    "suru": Location("Suru", 11.6667, 4.1667, "town", "Suru LGA headquarters"),
+    "yauri": Location("Yauri", 10.8333, 4.7667, "town", "Yauri LGA headquarters - Kainji Dam"),
+    
+    # Southern/Eastern Kebbi
+    "fakai": Location("Fakai", 11.5500, 4.4000, "town", "Fakai LGA headquarters"),
+    
+    # Eastern Kebbi (Lon 5.0+) - High risk corridor
+    "sakaba": Location("Sakaba", 11.0833, 5.6167, "town", "Sakaba LGA - Niger State border"),
+    "wasagu": Location("Wasagu", 11.3500, 5.4500, "town", "Wasagu/Danko LGA - Zamfara border"),
+    "danko": Location("Danko", 11.3200, 5.4800, "town", "Wasagu/Danko LGA - southeastern Kebbi"),
+    "zuru": Location("Zuru", 11.4308, 5.2309, "town", "Zuru LGA headquarters - Sokoto/Zamfara border"),
 }
 
 # HIGH-RISK BORDER LGAs
