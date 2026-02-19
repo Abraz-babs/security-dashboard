@@ -293,6 +293,69 @@ If area has cloud cover: SAR is the only option until weather clears.
     return combined
 
 
+# Simple Change Detection Function (Phase 2 MVP)
+def detect_changes_simple(old_image_pixels: list, new_image_pixels: list, threshold: float = 0.15) -> dict:
+    """
+    Simple pixel-based change detection.
+    Compares two satellite images and identifies areas with significant changes.
+    
+    Args:
+        old_image_pixels: List of pixel values from older image (e.g., NDVI values)
+        new_image_pixels: List of pixel values from newer image
+        threshold: Difference threshold (0.15 = 15% change)
+    
+    Returns:
+        dict: Change detection results
+    """
+    if len(old_image_pixels) != len(new_image_pixels):
+        return {
+            "status": "error",
+            "message": "Image dimensions do not match",
+            "changes_detected": False
+        }
+    
+    changed_pixels = 0
+    total_pixels = len(old_image_pixels)
+    max_difference = 0
+    
+    for old_val, new_val in zip(old_image_pixels, new_image_pixels):
+        difference = abs(new_val - old_val)
+        if difference > max_difference:
+            max_difference = difference
+        
+        if difference > threshold:
+            changed_pixels += 1
+    
+    change_percentage = (changed_pixels / total_pixels) * 100 if total_pixels > 0 else 0
+    
+    # Classification
+    if change_percentage > 10:
+        severity = "HIGH"
+        description = "Significant changes detected - possible major construction or clearing"
+    elif change_percentage > 5:
+        severity = "MEDIUM"
+        description = "Moderate changes detected - possible new structures or land modification"
+    elif change_percentage > 1:
+        severity = "LOW"
+        description = "Minor changes detected - possible vegetation or seasonal variation"
+    else:
+        severity = "NONE"
+        description = "No significant changes detected"
+    
+    return {
+        "status": "success",
+        "changes_detected": changed_pixels > 0,
+        "severity": severity,
+        "changed_pixels": changed_pixels,
+        "total_pixels": total_pixels,
+        "change_percentage": round(change_percentage, 2),
+        "max_difference": round(max_difference, 3),
+        "threshold_used": threshold,
+        "description": description,
+        "recommendation": "Ground verification recommended" if severity in ["HIGH", "MEDIUM"] else "Continue monitoring"
+    }
+
+
 # Specific security indicators that CAN be detected
 detectable_security_indicators = {
     "large_fires": {

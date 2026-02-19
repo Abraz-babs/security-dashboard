@@ -94,12 +94,34 @@ BEHAVIOR:
 - When discussing limitations, frame as "current sensor constraints" rather than system failures
 - Use phrases like "Intelligence suggests..." and "Analysis indicates..."
 
-COORDINATE REPORTING REQUIREMENTS:
-1. **Every location mentioned must include coordinates**: "Fakai LGA (11.42°N, 5.78°E)"
-2. **Every fire hotspot must include exact coordinates**: "Thermal anomaly at 11.423°N, 5.781°E"
-3. **Every detection must reference coordinates**: "New clearing detected at coordinates (11.415, 5.795)"
-4. **Border crossings must specify coordinates**: "Suspicious activity near border at 12.123°N, 3.456°E"
-5. **Recommendations must reference coordinates**: "Deploy patrol to 11.420°N, 5.780°E"
+COORDINATE REPORTING REQUIREMENTS - CRITICAL:
+1. **USE ONLY COORDINATES PROVIDED IN THE DATA** - NEVER generate your own coordinates
+2. **Every LGA mentioned must use its official coordinates from the provided list below**
+3. **Format**: Use decimal degrees (e.g., "11.0833N, 5.6167E" or "(11.0833, 5.6167)")
+4. **DO NOT use degree symbol (°)** - it causes encoding issues
+5. **Official LGA Coordinates (USE THESE EXACT VALUES):**
+   - Aleiro: 12.3167N, 4.6833E
+   - Arewa Dandi: 12.5833N, 4.4167E
+   - Argungu: 12.7448N, 4.5251E
+   - Augie: 12.8833N, 4.3167E
+   - Bagudo: 11.4045N, 4.2249E
+   - Birnin Kebbi: 12.4539N, 4.1975E
+   - Bunza: 12.6667N, 4.0167E
+   - Dandi: 11.7333N, 3.8833E
+   - Fakai: 11.5500N, 4.4000E
+   - Gwandu: 12.5000N, 4.4667E
+   - Jega: 12.2236N, 4.3791E
+   - Kalgo: 12.3167N, 4.2000E
+   - Koko/Besse: 11.4167N, 4.1333E
+   - Maiyama: 12.0833N, 4.6167E
+   - Ngaski: 10.9667N, 4.0833E
+   - Sakaba: 11.0833N, 5.6167E
+   - Shanga: 11.2167N, 4.5833E
+   - Suru: 11.6667N, 4.1667E
+   - Wasagu/Danko: 11.3500N, 5.4500E
+   - Yauri: 10.8333N, 4.7667E
+   - Zuru: 11.4308N, 5.2309E
+6. **If coordinates not in this list, state "Coordinates not available"**
 
 FORMAT: Structure responses with clear headers, bullet points, classified threat levels, and actionable recommendations. Present information as professional intelligence briefing. **Every geographic reference must include precise coordinates in parentheses.**"""
 
@@ -262,12 +284,19 @@ Use NATO DTG format. Be specific about LGAs. Current year is {now.year}, month {
 
 
 def _format_dashboard_data(data: dict) -> str:
-    """Format dashboard data for AI consumption."""
+    """Format dashboard data for AI consumption with official coordinates."""
     from services.geography import format_geographic_description, get_geographic_context
+    from config import KEBBI_LGAS
     
     parts = [f"Report Generated: {_current_datetime()}"]
+    
+    # ALWAYS include official LGA coordinates
+    parts.append("\nOFFICIAL LGA COORDINATES (USE THESE EXACT VALUES):")
+    for lga in KEBBI_LGAS:
+        parts.append(f"  - {lga['name']}: {lga['lat']}N, {lga['lon']}E ({lga['risk'].upper()} risk)")
+    
     if data.get("threat_level"):
-        parts.append(f"Overall Threat Level: {data['threat_level']}")
+        parts.append(f"\nOverall Threat Level: {data['threat_level']}")
     if data.get("active_threats"):
         parts.append(f"Active Threats: {data['active_threats']}")
     if data.get("lga_data"):
@@ -276,7 +305,7 @@ def _format_dashboard_data(data: dict) -> str:
             if isinstance(lga, dict):
                 lga_summary.append(f"  - {lga.get('name', 'Unknown')}: {lga.get('risk', 'unknown')} risk")
         if lga_summary:
-            parts.append("LGA Status:\n" + "\n".join(lga_summary))
+            parts.append("\nLGA Status:\n" + "\n".join(lga_summary))
     if data.get("fire_hotspots"):
         hotspots = data["fire_hotspots"]
         if isinstance(hotspots, list):

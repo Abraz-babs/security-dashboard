@@ -94,3 +94,51 @@ async def fire_satellite_correlation(request: Request, days: int = 3):
     fires = await fetch_all_sensors(days=2)
     hotspots = fires.get("hotspots", [])
     return await correlate_fires_to_satellites(hotspots, days_ahead=days)
+
+
+@router.get("/change-detection")
+@limiter.limit("20/minute")
+async def change_detection_demo(request: Request, lga: str = "Fakai"):
+    """
+    Demonstration of change detection capability (Phase 2 MVP).
+    Returns simulated change detection results for a given LGA.
+    In production, this would compare actual satellite imagery.
+    """
+    from services.satellite_analysis import detect_changes_simple
+    from datetime import datetime
+    
+    # Get LGA coordinates
+    from config import KEBBI_LGAS
+    lga_data = next((l for l in KEBBI_LGAS if l['name'].lower() == lga.lower()), None)
+    
+    if not lga_data:
+        return {
+            "status": "error",
+            "message": f"LGA '{lga}' not found",
+            "available_lgas": [l['name'] for l in KEBBI_LGAS]
+        }
+    
+    # Simulate pixel data (in production, fetch actual satellite NDVI values)
+    # This is a demonstration showing the algorithm structure
+    import random
+    random.seed(lga_data['lat'] * lga_data['lon'])  # Consistent results per LGA
+    
+    # Simulate 100 pixels with some random changes
+    old_pixels = [random.uniform(0.3, 0.8) for _ in range(100)]
+    # New pixels with some changes
+    new_pixels = [p + random.uniform(-0.2, 0.25) for p in old_pixels]
+    
+    # Run change detection
+    results = detect_changes_simple(old_pixels, new_pixels, threshold=0.15)
+    
+    return {
+        "status": "success",
+        "lga": lga,
+        "coordinates": {
+            "lat": lga_data['lat'],
+            "lon": lga_data['lon']
+        },
+        "timestamp": datetime.now().isoformat(),
+        "note": "This is a demonstration using simulated data. Production version will use actual Sentinel-2 NDVI values.",
+        "change_detection_results": results
+    }
