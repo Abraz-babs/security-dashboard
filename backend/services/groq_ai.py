@@ -188,7 +188,15 @@ def _call_llm(messages: list, temperature: float = 0.3, max_tokens: int = 2048) 
 def chat(message: str, history: list = None, context: dict = None) -> str:
     """Process a chat message with Groq+Gemini dual LLM."""
     now = _current_datetime()
+    from config import KEBBI_LGAS
+    
     system = SYSTEM_PROMPT + f"\n\nCRITICAL: Current date/time is {now}. Always use this. Never use 2024 dates."
+    
+    # ALWAYS include official LGA coordinates in context
+    lga_coords = "\n\nOFFICIAL LGA COORDINATES (USE ONLY THESE VALUES - NEVER HALLUCINATE):\n"
+    for lga in KEBBI_LGAS:
+        lga_coords += f"- {lga['name']}: {lga['lat']}N, {lga['lon']}E ({lga['risk'].upper()} risk)\n"
+    system += lga_coords
 
     if context:
         ctx = f"\n\nCURRENT DASHBOARD CONTEXT (as of {now}):\n"
@@ -206,9 +214,14 @@ def chat(message: str, history: list = None, context: dict = None) -> str:
     if history:
         for h in history[-10:]:
             messages.append(h)
-    messages.append({"role": "user", "content": message})
+    
+    # Add reminder to use official coordinates
+    user_message = f"""REMEMBER: Use ONLY the official LGA coordinates provided above. Do NOT generate or estimate coordinates.
 
-    return _call_llm(messages, temperature=0.3, max_tokens=2048)
+User query: {message}"""
+    messages.append({"role": "user", "content": user_message})
+
+    return _call_llm(messages, temperature=0.2, max_tokens=2048)
 
 
 def analyze_dashboard(dashboard_data: dict, focus_area: str = None) -> str:
